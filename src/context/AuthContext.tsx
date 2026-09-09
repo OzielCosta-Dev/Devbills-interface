@@ -34,6 +34,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 			(user) => {
 				console.log(user);
 				if (user) {
+					// 👇 TEMPORÁRIO - apenas para pegar o token durante o desenvolvimento
+					user.getIdToken().then((token) => console.log("ID TOKEN:", token));
 					setAuthState({
 						user: {
 							uid: user.uid,
