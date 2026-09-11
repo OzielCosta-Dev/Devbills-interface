@@ -7,33 +7,40 @@ interface MonthYearSelectProps {
 	onYearChange: (year: number) => void;
 }
 
+const monthNames: readonly string[] = [
+	"Janeiro",
+	"Fevereiro",
+	"Março",
+	"Abril",
+	"Maio",
+	"Junho",
+	"Julho",
+	"Agosto",
+	"Setembro",
+	"Outubro",
+	"Novembro",
+	"Dezembro",
+];
+
 const MonthYearSelect = ({
 	month,
 	onMonthChange,
 	onYearChange,
 	year,
 }: MonthYearSelectProps) => {
-	const monthNames: readonly string[] = [
-		"Janeiro",
-		"Fevereiro",
-		"Março",
-		"Abril",
-		"Maio",
-		"Junho",
-		"Julho",
-		"Agosto",
-		"Setembro",
-		"Outubro",
-		"Novembro",
-		"Dezembro",
-	];
+	const currentYear = new Date().getFullYear();
+	const years: number[] = Array.from(
+		{ length: 11 },
+		(_, i) => currentYear - 5 + i,
+	);
 
 	return (
 		<div className="flex items-center justify-between bg-900 rounded-lg p-3 border border-gray-700">
 			<button
 				type="button"
-				className="p-2 rounded-full hover:bg-gray-800 hover:text-primary-500 transition-colors"
+				className="p-2 rounded-full hover:bg-gray-800 hover:text-primary-500 transition-colors cursor=pointer"
 				aria-label="Mês Anterior"
+				onClick={handlePrevMonth}
 			>
 				<ChevronLeft />
 			</button>
@@ -44,7 +51,7 @@ const MonthYearSelect = ({
 				</label>
 				<select
 					id="month-select"
-					className="bg-gray-800 border border-gray-700 rounded-md py-1 px-3 text-sm font-medium text-gray-100 focus: outline-none focus:ring-1 focus: ring-primary-500"
+					className="bg-gray-800 border border-gray-700 rounded-md py-1 px-3 text-sm font-medium text-gray-100 focus: outline-none focus:ring-1 focus: ring-primary-500 cursor=pointer"
 				>
 					{monthNames.map((name, index) => (
 						<option key={name} value={index + 1}>
@@ -58,15 +65,24 @@ const MonthYearSelect = ({
 				</label>
 				<select
 					id="year-select"
-					className="bg-gray-800 border border-gray-700 rounded-md py-1 px-3 text-sm font-medium text-gray-100 focus: outline-none focus:ring-1 focus: ring-primary-500"
+					className="bg-gray-800 border border-gray-700 rounded-md py-1 px-3 text-sm font-medium text-gray-100 focus: outline-none focus:ring-1 focus: ring-primary-500 cursor=pointer"
 				>
-					{monthNames.map((name, index) => (
+					{years.map((name, index) => (
 						<option key={name} value={index + 1}>
 							{name}
 						</option>
 					))}
 				</select>
 			</div>
+
+			<button
+				type="button"
+				className="p-2 rounded-full hover:bg-gray-800 hover:text-primary-500 transition-colors cursor=pointer"
+				aria-label="Próximo Mês"
+				onClick={handleNextMonth}
+			>
+				<ChevronRight />
+			</button>
 		</div>
 	);
 };
