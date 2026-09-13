@@ -1,4 +1,4 @@
-import type { Category } from "./category";
+import type { Category, CategorySummary } from "./category";
 
 export enum TransactionType {
 	EXPENSE = "expense",
@@ -23,4 +23,11 @@ export interface TransactionFilter {
 	year: number;
 	categoryId?: string;
 	type?: TransactionType;
+}
+
+export interface TransactionSummary {
+	totalExpenses: number;
+	totalIncomes: number;
+	balance: number;
+	expensesByCategory: CategorySummary[];
 }
