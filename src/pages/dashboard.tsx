@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
+import Card from "../components/Card";
 import MonthYearSelect from "../components/MonthYearSelect";
 import { getTransactions } from "../services/transactionService";
 import type { TransactionSummary } from "../types/transactions";
-import Card from "../components/Card";
 
 const initialSumary: TransactionSummary = {
 	balance: 0,
@@ -38,7 +38,7 @@ const Dashboard = () => {
 					onYearChange={setYear}
 				/>
 			</div>
-			<Card />
+			<Card glowEffect hover>Olá<Card />
 		</div>
 	);
 };
