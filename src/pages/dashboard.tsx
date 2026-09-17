@@ -1,9 +1,13 @@
-import { AArrowUp } from "lucide-react";
+import { ArrowUp, Wallet } from "lucide-react";
 import { useEffect, useState } from "react";
 import Card from "../components/Card";
 import MonthYearSelect from "../components/MonthYearSelect";
-import { getTransactions } from "../services/transactionService";
+import {
+	getTransactionSummary,
+	getTransactions,
+} from "../services/transactionService";
 import type { TransactionSummary } from "../types/transactions";
+import { formatCurrency } from "../utils/formatters";
 
 const initialSumary: TransactionSummary = {
 	balance: 0,
@@ -20,8 +24,7 @@ const Dashboard = () => {
 
 	useEffect(() => {
 		async function loadTransactionsSummary() {
-			const response = await getTransactionsSummary(month, year);
-
+			const response = await getTransactionSummary(month, year);
 			setSummary(response);
 		}
 
@@ -39,16 +42,40 @@ const Dashboard = () => {
 					onYearChange={setYear}
 				/>
 			</div>
-			<Card
-				glowEffect
-				hover
-				title="Despesas"
-				icon={<AArrowUp className="text-primary-500" />}
-			>
-				<div>
-					<p className="font-bold text-primary-500">R$ 2000,00</p>
-				</div>
-			</Card>
+			<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+				<Card
+					icon={<Wallet size={20} className="text-red-200" />}
+					title="Despesa"
+					hover
+				>
+					<p className="text-2xl font-semibold mt-2 text-red-500">
+						{formatCurrency(summary.balance)}
+					</p>
+				</Card>
+
+				<Card
+					icon={<ArrowUp size={20} className="text-primary-500" />}
+					title="Receitas"
+				>
+					<p className="text-2xl font-semibold mt-2 text-primary-500">
+						{formatCurrency(summary.totalIncomes)}
+					</p>
+				</Card>
+
+				<Card
+					icon={<Wallet size={20} className="text-primary-500" />}
+					title="Saldo"
+					hover
+					glowEffect={summary.balance > 0}
+				>
+					<p
+						className={`text-2xl font-semibold mt-2 
+        ${summary.balance > 0 ? "text-primary-500" : "text-red-300"}`}
+					>
+						{formatCurrency(summary.balance)}
+					</p>
+				</Card>
+			</div>
 		</div>
 	);
 };

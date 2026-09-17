@@ -21,6 +21,7 @@ api.interceptors.request.use(
 				config.headers.set("Authorization", `Bearer ${token}`);
 			} catch (err) {
 				console.error("Erro ao obter token no firebase", err);
+				
 			}
 		}
 		return config;
