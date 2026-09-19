@@ -1,5 +1,6 @@
-import { ArrowUp, Wallet } from "lucide-react";
+import { ArrowUp, TrendingUp, Wallet } from "lucide-react";
 import { useEffect, useState } from "react";
+import { Pie, PieChart, ResponsiveContainer } from 'recharts';
 import Card from "../components/Card";
 import MonthYearSelect from "../components/MonthYearSelect";
 import {
@@ -43,6 +44,37 @@ const Dashboard = () => {
 				/>
 			</div>
 			<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+				</div>
+				< div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mg-6 mt-3">
+					<Card icon={<TrendingUp size={20} className="text-primary-500"/>}
+					  title="Despesas por Categoria"
+					  className="min-h-80"
+					>
+						<ResponsiveContainer>
+                              <PieChart>
+								<Pie
+								  data={summary.expensesByCategory}
+								  cx="50%"
+								  cy="50%"
+								  outerRadius={80}
+								  dataKey="amount"
+								  nameKey="categoryName"
+								>
+									{summary.expensesByCategory.map( entry => (
+										<Cell 
+										  key={entry.categoryId}
+										  fill={entry.categoryColor}
+										/>
+									))}
+
+								</Pie>
+							  </PieChart>
+						</ResponsiveContainer>
+                       
+					</Card>
+				
+
+				</div>
 				<Card
 					icon={<Wallet size={20} className="text-red-200" />}
 					title="Despesa"
