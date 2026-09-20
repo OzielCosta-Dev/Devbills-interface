@@ -1,6 +1,6 @@
 import { ArrowUp, TrendingUp, Wallet } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Pie, PieChart, ResponsiveContainer } from 'recharts';
+import { Cell, Pie, PieChart, ResponsiveContainer } from 'recharts';
 import Card from "../components/Card";
 import MonthYearSelect from "../components/MonthYearSelect";
 import {
@@ -50,6 +50,10 @@ const Dashboard = () => {
 					  title="Despesas por Categoria"
 					  className="min-h-80"
 					>
+						{summary.expensesByCategory.length > 0 ? (
+
+						
+						<div className="h-72 mt-4">
 						<ResponsiveContainer>
                               <PieChart>
 								<Pie
@@ -70,7 +74,8 @@ const Dashboard = () => {
 								</Pie>
 							  </PieChart>
 						</ResponsiveContainer>
-                       
+                       </div>
+					   ) : <p>Sem dados</p>}
 					</Card>
 				
 
@@ -109,7 +114,7 @@ const Dashboard = () => {
 				</Card>
 			</div>
 		</div>
-	);
+	)
 };
 
 export default Dashboard;
