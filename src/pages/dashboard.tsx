@@ -1,6 +1,13 @@
 import { ArrowUp, TrendingUp, Wallet } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Cell, Pie, PieChart, ResponsiveContainer } from "recharts";
+import {
+	Cell,
+	Legend,
+	Pie,
+	PieChart,
+	ResponsiveContainer,
+	Tooltip,
+} from "recharts";
 import Card from "../components/Card";
 import MonthYearSelect from "../components/MonthYearSelect";
 import {
@@ -17,10 +24,14 @@ const initialSumary: TransactionSummary = {
 	expensesByCategory: [],
 };
 
+interface ChartLabelProps {
+	categoryName: string;
+	percent: number;
+}
 const Dashboard = () => {
 	const currentDate = new Date();
 	const [year, setYear] = useState<number>(currentDate.getFullYear());
-	const [month, setMonth] = useState(currentDate.getMonth() + 1);
+	const [month, setMonth] = useState(currentDate.getMonth() + 4);
 	const [summary, setSummary] = useState<TransactionSummary>(initialSumary);
 
 	useEffect(() => {
@@ -31,6 +42,17 @@ const Dashboard = () => {
 
 		loadTransactionsSummary();
 	}, [month, year]);
+
+	const renderPiechartLabel = ({
+		categoryName,
+		percent,
+	}: ChartLabelProps): string => {
+		return `${categoryName}: ${(percent * 100).toFixed(1)}%`;
+	};
+
+	const formatToolTipValue = (value: number | string): string => {
+		return formatCurrency(typeof value === "number" ? value : 0);
+	};
 
 	return (
 		<div className="container-app py-6">
@@ -95,16 +117,21 @@ const Dashboard = () => {
 										outerRadius={80}
 										dataKey="amount"
 										nameKey="categoryName"
+										label={renderPiechartLabel}
 									>
 										{summary.expensesByCategory.map((entry) => (
 											<Cell key={entry.categoryId} fill={entry.categoryColor} />
 										))}
 									</Pie>
+									<Tooltip formatter={formatToolTipValue} />
+									<Legend />
 								</PieChart>
 							</ResponsiveContainer>
 						</div>
 					) : (
-						<p>Sem dados</p>
+						<div className="flex items-center justify-center h-64 text-gray-500">
+							Nenhuma despesa registrada nesse periodo
+						</div>
 					)}
 				</Card>
 			</div>
