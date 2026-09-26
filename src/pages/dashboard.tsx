@@ -5,6 +5,7 @@ import {
 	Legend,
 	Pie,
 	PieChart,
+	type PieLabelRenderProps,
 	ResponsiveContainer,
 	Tooltip,
 } from "recharts";
@@ -12,9 +13,9 @@ import Card from "../components/Card";
 import MonthYearSelect from "../components/MonthYearSelect";
 import {
 	getTransactionSummary,
-	getTransactions,
+	getTransactionsMontly,
 } from "../services/transactionService";
-import type { TransactionSummary } from "../types/transactions";
+import type { MonthlyItem, TransactionSummary } from "../types/transactions";
 import { formatCurrency } from "../utils/formatters";
 
 const initialSumary: TransactionSummary = {
@@ -24,15 +25,12 @@ const initialSumary: TransactionSummary = {
 	expensesByCategory: [],
 };
 
-interface ChartLabelProps {
-	categoryName: string;
-	percent: number;
-}
 const Dashboard = () => {
 	const currentDate = new Date();
 	const [year, setYear] = useState<number>(currentDate.getFullYear());
-	const [month, setMonth] = useState(currentDate.getMonth() + 4);
+	const [month, setMonth] = useState(currentDate.getMonth() + 1);
 	const [summary, setSummary] = useState<TransactionSummary>(initialSumary);
+	const [monthlyItemsData, setMonthlyItemsData] = useState<MonthlyItem[]>([]);
 
 	useEffect(() => {
 		async function loadTransactionsSummary() {
@@ -40,18 +38,20 @@ const Dashboard = () => {
 			setSummary(response);
 		}
 
+		async function loadMonthlyItems() {
+			const response = await getTransactionsMontly(month, year);
+			setMonthlyItemsData(response.history);
+		}
+
 		loadTransactionsSummary();
+		loadMonthlyItems();
 	}, [month, year]);
 
 	const renderPiechartLabel = ({
-		categoryName,
+		name,
 		percent,
-	}: ChartLabelProps): string => {
-		return `${categoryName}: ${(percent * 100).toFixed(1)}%`;
-	};
-
-	const formatToolTipValue = (value: number | string): string => {
-		return formatCurrency(typeof value === "number" ? value : 0);
+	}: PieLabelRenderProps): string => {
+		return `${name}: ${(Number(percent ?? 0) * 100).toFixed(1)}%`;
 	};
 
 	return (
@@ -72,7 +72,7 @@ const Dashboard = () => {
 					hover
 				>
 					<p className="text-2xl font-semibold mt-2 text-red-500">
-						{formatCurrency(summary.balance)}
+						{formatCurrency(summary.totalExpenses)}
 					</p>
 				</Card>
 
@@ -100,7 +100,7 @@ const Dashboard = () => {
 				</Card>
 			</div>
 
-			<div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mg-6 mt-3">
+			<div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6 mt-3">
 				<Card
 					icon={<TrendingUp size={20} className="text-primary-500" />}
 					title="Despesas por Categoria"
@@ -123,7 +123,13 @@ const Dashboard = () => {
 											<Cell key={entry.categoryId} fill={entry.categoryColor} />
 										))}
 									</Pie>
-									<Tooltip formatter={formatToolTipValue} />
+									<Tooltip
+										formatter={(value) =>
+											typeof value === "number"
+												? formatCurrency(value)
+												: String(value ?? "")
+										}
+									/>
 									<Legend />
 								</PieChart>
 							</ResponsiveContainer>
