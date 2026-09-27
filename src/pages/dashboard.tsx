@@ -1,6 +1,9 @@
-import { ArrowUp, TrendingUp, Wallet } from "lucide-react";
+import { ArrowUp, Calendar, TrendingUp, Wallet } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
+	Bar,
+	BarChart,
+	CartesianGrid,
 	Cell,
 	Legend,
 	Pie,
@@ -8,6 +11,8 @@ import {
 	type PieLabelRenderProps,
 	ResponsiveContainer,
 	Tooltip,
+	XAxis,
+	YAxis,
 } from "recharts";
 import Card from "../components/Card";
 import MonthYearSelect from "../components/MonthYearSelect";
@@ -139,6 +144,59 @@ const Dashboard = () => {
 							Nenhuma despesa registrada nesse periodo
 						</div>
 					)}
+				</Card>
+				<Card
+					icon={<Calendar size={20} className="text-primary-500" />}
+					title="Historico Mensal"
+					className="min-h-80 p-2.5"
+				>
+					<div className="h-72 mt-4">
+						{monthlyItemsData.length > 0 ? (
+							<ResponsiveContainer>
+								<BarChart
+									data={monthlyItemsData}
+									margin={{ top: 5, right: 0, left: 0, bottom: 5 }}
+								>
+									<CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+									<XAxis
+										dataKey="name"
+										stroke="#9CA3AF"
+										tick={{ style: { textTransform: "capitalize" } }}
+									/>
+									<YAxis
+										stroke="#9CA3AF"
+										width="auto"
+										tickFormatter={formatCurrency}
+										tick={{ style: { fontSize: 14 } }}
+									/>
+									<Tooltip
+										formatter={(value) =>
+											typeof value === "number"
+												? formatCurrency(value)
+												: String(value ?? "")
+										}
+									/>
+									<Legend />
+									<Bar
+										dataKey="income"
+										name="Receitas"
+										fill="#37E359"
+										radius={[10, 10, 0, 0]}
+									/>
+									<Bar
+										dataKey="expenses"
+										name="Despesas"
+										fill="#FF6384"
+										radius={[10, 10, 0, 0]}
+									/>
+								</BarChart>
+							</ResponsiveContainer>
+						) : (
+							<div className="flex items-center justify-center h-64 text-gray-500">
+								Nenhuma transação registrada nesse período
+							</div>
+						)}
+					</div>
 				</Card>
 			</div>
 		</div>
