@@ -1,0 +1,12 @@
+const transactionsForm = () => {
+	return (
+		<div>
+			<h1>
+				TransactionsForm
+			</h1>
+		</div>
+	);
+};
+
+
+export default transactionsForm;
