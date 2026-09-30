@@ -33,9 +33,10 @@ const transactions = () => {
 
 			<div className="mb-6">
 				<Input
-					placehplder="Buscar transações..."
+					error="erro ao pesquisar"
+					placeholder="Buscar transações..."
 					icon={<Search className="w-4 h-4" />}
-					fullwidth
+					fullWidth
 				/>
 			</div>
 		</div>
