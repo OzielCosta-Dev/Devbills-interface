@@ -7,6 +7,8 @@ import Input from "../components/Input";
 import MonthYearSelect from "../components/MonthYearSelect";
 import { getTransactions } from "../services/transactionService";
 import type { Transaction } from "../types/transactions";
+import { formatDate } from "../routes/formatters";
+import { formatCurrency } from "../utils/formatters";
 
 const Transactions = () => {
 	const currentDate = new Date();
@@ -135,7 +137,7 @@ const Transactions = () => {
 							<tbody className="divide-y divide-gray-700">
 								{transactions.map((transaction) => (
 									<tr key={transaction.id} className="hover:bg-gray-800">
-										<td className="px-6 py-4 text-sm text-gray-400 whitespace-nowrap">
+										<td className="px-6 py-4  whitespace-nowrap">
 											<div className="flex items-center">
 												<div className="mr-2">
 													{transaction.type === TransactionType.INCOME ? (
@@ -149,7 +151,23 @@ const Transactions = () => {
 												</span>
 											</div>
 										</td>
-										<td className="px-6 py-4 text-sm text-gray-400 whitespace-nowrap"></td>
+
+										<td className="px-6 py-4  whitespace-nowrap">
+                                           {formatDate(transaction.date)}
+										</td>
+
+										<td className="px-6 py-4  whitespace-nowrap">
+                                           <div className="flex item-center">
+											<div className="w-2 h-2 rounded-full mr-2" style={{backgroundColor: transaction.category.color}} />
+                                              <span className="text-sm text-gray-400">{transaction.category.name}</span>
+											
+										   </div>
+										</td>
+										<td className="px-6 py-4  whitespace-nowrap">
+											<span>
+												{formatCurrency(transaction.amount)}
+											</span>
+										</td>
 									</tr>
 								))}
 							</tbody>
