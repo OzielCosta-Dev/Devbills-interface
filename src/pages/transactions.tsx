@@ -1,13 +1,13 @@
-import { AlertCircle, ArrowBigDown, Plus, Search } from "lucide-react";
+import { AlertCircle, ArrowBigDown, Plus, Search, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
 import Button from "../components/Button";
 import Card from "../components/Card";
 import Input from "../components/Input";
 import MonthYearSelect from "../components/MonthYearSelect";
-import { getTransactions } from "../services/transactionService";
-import type { Transaction } from "../types/transactions";
 import { formatDate } from "../routes/formatters";
+import { getTransactions } from "../services/transactionService";
+import { type Transaction, TransactionType } from "../types/transactions";
 import { formatCurrency } from "../utils/formatters";
 
 const Transactions = () => {
@@ -17,6 +17,7 @@ const Transactions = () => {
 	const [loading, setLoading] = useState<boolean>(false);
 	const [error, setError] = useState<string>("");
 	const [transactions, setTransactions] = useState<Transaction[]>([]);
+	const [deletingId, setDeletingId] = useState<string>("");
 
 	const fetchTransactions = async (): Promise<void> => {
 		try {
@@ -32,6 +33,8 @@ const Transactions = () => {
 			setError("Não foi possível carregar as transações, tente novamente");
 		}
 	};
+
+	const handleDelete = (id: string): void => {};
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
 	useEffect(() => {
@@ -153,20 +156,39 @@ const Transactions = () => {
 										</td>
 
 										<td className="px-6 py-4  whitespace-nowrap">
-                                           {formatDate(transaction.date)}
+											{formatDate(transaction.date)}
 										</td>
 
 										<td className="px-6 py-4  whitespace-nowrap">
-                                           <div className="flex item-center">
-											<div className="w-2 h-2 rounded-full mr-2" style={{backgroundColor: transaction.category.color}} />
-                                              <span className="text-sm text-gray-400">{transaction.category.name}</span>
-											
-										   </div>
+											<div className="flex item-center">
+												<div
+													className="w-2 h-2 rounded-full mr-2"
+													style={{
+														backgroundColor: transaction.category.color,
+													}}
+												/>
+												<span className="text-sm text-gray-400">
+													{transaction.category.name}
+												</span>
+											</div>
 										</td>
 										<td className="px-6 py-4  whitespace-nowrap">
-											<span>
+											<span
+												className={`${transaction.type === TransactionType.INCOME ? "text-primary-500" : "text-red-500"}`}
+											>
 												{formatCurrency(transaction.amount)}
 											</span>
+										</td>
+
+										<td className="px-6 py-4  whitespace-nowrap cursor-pointer">
+											<button
+												type="button"
+												onClick={() => handleDelete(transaction.id)}
+												className="text-red-500 hover:text-red-400 rounded-b-full"
+											>
+												{deletingId === transaction.id}
+												<Trash2 className="w-4 h-4 " />
+											</button>
 										</td>
 									</tr>
 								))}
