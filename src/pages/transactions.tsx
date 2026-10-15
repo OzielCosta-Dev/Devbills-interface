@@ -1,14 +1,20 @@
-import { AlertCircle, ArrowBigDown, Plus, Search, Trash2 } from "lucide-react";
+import {
+	AlertCircle,
+	ArrowBigDown,
+	ArrowUp,
+	Plus,
+	Search,
+	Trash2,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
 import Button from "../components/Button";
 import Card from "../components/Card";
 import Input from "../components/Input";
 import MonthYearSelect from "../components/MonthYearSelect";
-import { formatDate } from "../routes/formatters";
 import { getTransactions } from "../services/transactionService";
 import { type Transaction, TransactionType } from "../types/transactions";
-import { formatCurrency } from "../utils/formatters";
+import { formatCurrency, formatDate } from "../utils/formatters";
 
 const Transactions = () => {
 	const currentDate = new Date();
@@ -29,8 +35,7 @@ const Transactions = () => {
 			console.error("Erro ao carregar transações:", err);
 			setError("Não foi possível carregar as transações, tente novamente");
 		} finally {
-			setLoading(true);
-			setError("Não foi possível carregar as transações, tente novamente");
+			setLoading(false);
 		}
 	};
 
@@ -57,16 +62,15 @@ const Transactions = () => {
 
 			<Card className="mb-6">
 				<MonthYearSelect
-					month={5}
+					month={month}
 					onMonthChange={setMonth}
 					onYearChange={setYear}
-					year={2025}
+					year={year}
 				/>
 			</Card>
 
 			<Card className="mb-6">
 				<Input
-					error="erro ao pesquisar"
 					placeholder="Buscar transações..."
 					icon={<Search className="w-4 h-4" />}
 					fullWidth
@@ -102,7 +106,7 @@ const Transactions = () => {
 					</div>
 				) : (
 					<div className="overflow-x-auto">
-						<table className="divide-y divide-gray-700 min-h-full">
+						<table className="divide-y divide-gray-700 w-full">
 							<thead>
 								<tr>
 									<th
@@ -144,7 +148,7 @@ const Transactions = () => {
 											<div className="flex items-center">
 												<div className="mr-2">
 													{transaction.type === TransactionType.INCOME ? (
-														<ArrowUP className="w-4 h-4 text-primary-500" />
+														<ArrowUp className="w-4 h-4 text-primary-500" />
 													) : (
 														<ArrowBigDown className="w-4 h-4 text-red-500" />
 													)}
@@ -160,7 +164,7 @@ const Transactions = () => {
 										</td>
 
 										<td className="px-6 py-4  whitespace-nowrap">
-											<div className="flex item-center">
+											<div className="flex items-center">
 												<div
 													className="w-2 h-2 rounded-full mr-2"
 													style={{
