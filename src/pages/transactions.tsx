@@ -168,11 +168,11 @@ const Transactions = () => {
 												<div
 													className="w-2 h-2 rounded-full mr-2"
 													style={{
-														backgroundColor: transaction.category.color,
+														backgroundColor: transaction.Category.color,
 													}}
 												/>
 												<span className="text-sm text-gray-400">
-													{transaction.category.name}
+													{transaction.Category.name}
 												</span>
 											</div>
 										</td>

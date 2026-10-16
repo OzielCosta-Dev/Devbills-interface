@@ -12,7 +12,7 @@ export interface Transaction {
 	amount: number;
 	date: string | Date;
 	categoryId: string;
-	category: Category;
+	Category: Category;
 	type: TransactionType;
 	updatedAt: string | Date;
 	createddAt: string | Date;
