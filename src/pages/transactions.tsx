@@ -41,6 +41,12 @@ const Transactions = () => {
 
 	const handleDelete = (id: string): void => {};
 
+	const confirmDelete = (id: string): void => {
+		if (window.confirm("Tem certeza que deseja deletar essa transação ?")) {
+			handleDelete(id);
+		}
+	};
+
 	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
 	useEffect(() => {
 		fetchTransactions();
@@ -106,7 +112,7 @@ const Transactions = () => {
 					</div>
 				) : (
 					<div className="overflow-x-auto">
-						<table className="divide-y divide-gray-700 w-full">
+						<table className="divide-y divide-gray-700 w-full w-full">
 							<thead>
 								<tr>
 									<th
@@ -144,7 +150,7 @@ const Transactions = () => {
 							<tbody className="divide-y divide-gray-700">
 								{transactions.map((transaction) => (
 									<tr key={transaction.id} className="hover:bg-gray-800">
-										<td className="px-6 py-4  whitespace-nowrap">
+										<td className="px-3 py-4  whitespace-nowrap">
 											<div className="flex items-center">
 												<div className="mr-2">
 													{transaction.type === TransactionType.INCOME ? (
@@ -159,11 +165,11 @@ const Transactions = () => {
 											</div>
 										</td>
 
-										<td className="px-6 py-4  whitespace-nowrap">
+										<td className="px-3 py-4  whitespace-nowrap">
 											{formatDate(transaction.date)}
 										</td>
 
-										<td className="px-6 py-4  whitespace-nowrap">
+										<td className="px-3 py-4  whitespace-nowrap">
 											<div className="flex items-center">
 												<div
 													className="w-2 h-2 rounded-full mr-2"
@@ -176,7 +182,7 @@ const Transactions = () => {
 												</span>
 											</div>
 										</td>
-										<td className="px-6 py-4  whitespace-nowrap">
+										<td className="px-3 py-4  whitespace-nowrap">
 											<span
 												className={`${transaction.type === TransactionType.INCOME ? "text-primary-500" : "text-red-500"}`}
 											>
@@ -184,14 +190,18 @@ const Transactions = () => {
 											</span>
 										</td>
 
-										<td className="px-6 py-4  whitespace-nowrap cursor-pointer">
+										<td className="px-3 py-4  whitespace-nowrap cursor-pointer">
 											<button
 												type="button"
-												onClick={() => handleDelete(transaction.id)}
-												className="text-red-500 hover:text-red-400 rounded-b-full"
+												onClick={() => confirmDelete(transaction.id)}
+												className="text-red-500 hover:text-red-400 rounded-b-full cursor-pointer"
+												disabled={deletingId === transaction.id}
 											>
-												{deletingId === transaction.id}
-												<Trash2 className="w-4 h-4 " />
+												{deletingId === transaction.id ? (
+													<span className="inline-block w-4 h-4 border-2 border-red-500 border-t-transparent rounded-full animate-spin" />
+												) : (
+													<Trash2 />
+												)}
 											</button>
 										</td>
 									</tr>
