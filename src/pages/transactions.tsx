@@ -8,11 +8,15 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
+import { toast } from "react-toastify";
 import Button from "../components/Button";
 import Card from "../components/Card";
 import Input from "../components/Input";
 import MonthYearSelect from "../components/MonthYearSelect";
-import { getTransactions } from "../services/transactionService";
+import {
+	deleteTransactions,
+	getTransactions,
+} from "../services/transactionService";
 import { type Transaction, TransactionType } from "../types/transactions";
 import { formatCurrency, formatDate } from "../utils/formatters";
 
@@ -39,7 +43,19 @@ const Transactions = () => {
 		}
 	};
 
-	const handleDelete = (id: string): void => {};
+	const handleDelete = async (id: string): Promise<void> => {
+		try {
+			setDeletingId(id);
+			await deleteTransactions(id);
+			toast.success("Transação deletada com sucesso");
+			setTransactions((prev) => prev.filter((t) => t.id !== id));
+		} catch (err) {
+			console.error(err);
+			toast.error("Falha ao deletar transação");
+		} finally {
+			setDeletingId("");
+		}
+	};
 
 	const confirmDelete = (id: string): void => {
 		if (window.confirm("Tem certeza que deseja deletar essa transação ?")) {
