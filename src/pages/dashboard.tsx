@@ -39,13 +39,23 @@ const Dashboard = () => {
 
 	useEffect(() => {
 		async function loadTransactionsSummary() {
-			const response = await getTransactionSummary(month, year);
-			setSummary(response);
+			try {
+				const response = await getTransactionSummary(month, year);
+				setSummary(response);
+			} catch (err) {
+				console.error("Erro ao carregar resumo", err);
+				setSummary(initialSumary);
+			}
 		}
 
 		async function loadMonthlyItems() {
-			const response = await getTransactionsMontly(month, year);
-			setMonthlyItemsData(response.history);
+			try {
+				const response = await getTransactionsMontly(month, year);
+				setMonthlyItemsData(response.history ?? []);
+			} catch (err) {
+				console.error("Erro ao carregar histórico", err);
+				setMonthlyItemsData([]);
+			}
 		}
 
 		loadTransactionsSummary();
