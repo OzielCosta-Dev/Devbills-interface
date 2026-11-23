@@ -1,4 +1,4 @@
-import type { TransactionType } from "../types/transactions";
+import { TransactionType } from "../types/transactions";
 
 interface TransactionTypeSelectionProps {
     value: TransactionType, 
@@ -23,13 +23,21 @@ const TransactionTypeSelector = ({value, onChange, id}: TransactionTypeSelection
    ]
 
     return (
-        <div>
-            <h2> 
-                Transaction
-            </h2>
-        </div>
-    )
-}
+        <fieldset className="flex gap-2" id={id}>
+            <legend className="sr-only">Tipo de transação</legend>
+            {transactionsTypeButtons.map( item => (
+                <button
+                    key={item.type}
+                    type="button"
+                    className={`cursor-pointer flex items-center justify-center border rounded-md py-2 px-4 transition-all ${value === item.type ? item.activeClasses : item.inativeClasses}`}
+                    onClick={() => onChange(item.type)}
+                >
+                    {item.label}
+                </button>
+            ))}
+        </fieldset>
+    
+)}
 
 
 export default TransactionTypeSelector;
