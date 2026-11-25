@@ -5,7 +5,7 @@ import type { Category } from "../types/category";
 import { TransactionType } from "../types/transactions";
 import TransactionTypeSelector from "../components/TransTypesSelector";
 import Input from "../components/Input";
-import { Calendar, DollarSign } from "lucide-react";
+import { Calendar, DollarSign, Tag } from "lucide-react";
 import Select from "../components/Select";
 
 interface FormData {
@@ -38,13 +38,15 @@ const transactionsForm = () => {
 		fetchCategories();
 	}, []);
 
+	const filteredCategories = categories.filter((category) => category.type === formData.type)
 
 	const handleTransactionType = (itemType: TransactionType):void => {
 		setFormData( (prev) => ({...prev, type: itemType}))
 	}
 
-	const handleChange = () => {
-
+	const handleChange = (event: ChangeEvent<HTMLInputElement | HTMLSelectElement>):void => {
+         const { name, value } = event.target;
+		 setFormData( (prev) => ({...prev, [name]: value}) )
 	}
 
 	const handleSubmit = () => {};
@@ -97,13 +99,19 @@ const transactionsForm = () => {
 						/>
 
 						<Select 
-						   label="Date"
-						   name="date"
-						   type="date"
-                           value={formData.date}
+						   label="Categoria"
+						   name="categoryId"
+                           value={formData.categoryId}
 						   onChange={handleChange}
-						   icon={<Calendar className="w-4 h-4"/>}
+						   icon={<Tag className="w-4 h-4"/>}
 						   required
+						   options={[
+							   { value: "", label:"Selecione uma categoria"},
+							   ...filteredCategories.map((category) => ({
+								   value: category.id,
+								   label: category.name,
+							   })),
+						   ]}
 						/>
 					</form>
 				</Card>
