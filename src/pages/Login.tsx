@@ -1,58 +1,62 @@
+import { Wallet } from "lucide-react";
 import { useEffect } from "react";
-import { useNavigate } from "react-router";
+import { Link, useLocation, useNavigate } from "react-router";
 import GoogleLoginButton from "../components/GoogleLoginButton";
 import { useAuth } from "../context/AuthContext";
 
 const Login = () => {
 	const navigate = useNavigate();
-
+	const location = useLocation();
 	const { signWithGoogle, authState } = useAuth();
-	const handleLogin = async () => {
-		try {
-			await signWithGoogle();
-		} catch (err) {
-			console.error("Erro ao fazer login com o Google", err);
-		}
-	};
+
+	const redirectTo =
+		(location.state as { from?: string } | null)?.from ?? "/dashboard";
 
 	useEffect(() => {
 		if (authState.user && !authState.loading) {
-			navigate("/dashboard");
+			navigate(redirectTo, { replace: true });
 		}
-	}, [authState.user, authState.loading, navigate]);
+	}, [authState.user, authState.loading, navigate, redirectTo]);
 
 	return (
-		<div className="min-h-screen flex items-center justify-center bg-gray-200 py-12 px-4 sm:px-6 lg:px-8">
+		<div className="min-h-screen flex items-center justify-center bg-gray-950 py-12 px-4 sm:px-6 lg:px-8">
 			<div className="max-w-md w-full space-y-8">
-				<header>
-					<h1 className="text-center text-3xl font-extrabold text-gray-900 ">
-						DevBills
-					</h1>
-					<p className="mt-2 text-center text-sm text-gray-600">
+				<header className="text-center">
+					<Link to="/" className="inline-flex items-center gap-2">
+						<Wallet className="w-8 h-8 text-primary-500" />
+						<h1 className="text-3xl font-extrabold">
+							Dev<span className="text-primary-500">Bills</span>
+						</h1>
+					</Link>
+					<p className="mt-2 text-sm text-gray-400">
 						Gerencie suas finanças de forma simples e eficiente
 					</p>
 				</header>
 
-				<main className="mt-8 bg-white py-8 px-4 shadow-md rounded-lg sm:px-10 space-y-6">
-					<section className="mb-6">
-						<h2 className="text-lg font-medium text-gray-900">
-							Faça login para continuar
-						</h2>
-						<p className="mt-1 text-sm text-gray-600 ">
+				<main className="bg-gray-900 border border-gray-700 py-8 px-4 shadow-md rounded-xl sm:px-10 space-y-6">
+					<section>
+						<h2 className="text-lg font-medium">Faça login para continuar</h2>
+						<p className="mt-1 text-sm text-gray-400">
 							Acesse sua conta para começar a gerenciar as suas finanças
 						</p>
 					</section>
 
-					<GoogleLoginButton onClick={handleLogin} isLoading={false} />
+					<GoogleLoginButton
+						onClick={signWithGoogle}
+						isLoading={authState.loading}
+					/>
 
 					{authState.error && (
-						<div className="bg-red-50 text-center text-red-700 mt-4">
-							<p>{authState.error}Erro no sistema</p>
+						<div
+							className="rounded-lg border border-red-500/40 bg-red-500/10 p-3 text-center text-sm text-red-500"
+							role="alert"
+						>
+							{authState.error}
 						</div>
 					)}
 
-					<footer className="mt-6">
-						<p className="mt-1 text-sm text-gray-600 text-center">
+					<footer>
+						<p className="text-xs text-gray-400 text-center">
 							Ao fazer login, você concorda com nossos termos de uso e política
 							de privacidade.
 						</p>

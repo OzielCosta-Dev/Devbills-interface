@@ -1,6 +1,7 @@
 import axios, {
 	type AxiosInstance,
 	type InternalAxiosRequestConfig,
+	isAxiosError,
 } from "axios";
 import { firebaseAuth } from "../config/firebase";
 
@@ -21,9 +22,20 @@ api.interceptors.request.use(
 				config.headers.set("Authorization", `Bearer ${token}`);
 			} catch (err) {
 				console.error("Erro ao obter token no firebase", err);
-				
 			}
 		}
 		return config;
 	},
 );
+
+/** Extrai uma mensagem amigável de um erro vindo da API. */
+export const getApiErrorMessage = (
+	err: unknown,
+	fallback = "Ocorreu um erro inesperado",
+): string => {
+	if (isAxiosError<{ error?: string; message?: string }>(err)) {
+		if (!err.response) return "Não foi possível conectar ao servidor";
+		return err.response.data?.error ?? err.response.data?.message ?? fallback;
+	}
+	return fallback;
+};

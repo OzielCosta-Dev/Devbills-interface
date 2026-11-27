@@ -1,26 +1,20 @@
+import { lazy, Suspense } from "react";
 import { BrowserRouter, Route, Routes } from "react-router";
-import { ToastContainer, type ToastContainerProps } from "react-toastify";
+import { ToastContainer } from "react-toastify";
 import { AuthProvider } from "../context/AuthContext";
 import AppLayout from "../layout/AppLayout";
-import Dashboard from "../pages/dashboard";
+import Spinner from "../components/Spinner";
 import Home from "../pages/Home";
 import Login from "../pages/Login";
+import NotFound from "../pages/NotFound";
 import Transactions from "../pages/transactions";
 import TransactionForm from "../pages/transactionsForm";
 import PrivateRoutes from "./PrivateRoutes";
 
+// O dashboard usa recharts (pesado), então é carregado sob demanda
+const Dashboard = lazy(() => import("../pages/dashboard"));
+
 const AppRoutes = () => {
-	const toastConfig: ToastContainerProps = {
-		position: "top-right",
-		autoClose: 3000,
-		hideProgressBar: false,
-		newestOnTop: true,
-		closeOnClick: true,
-		pauseOnFocusLoss: true,
-		draggable: true,
-		pauseOnHover: true,
-		theme: "colored",
-	};
 	return (
 		<BrowserRouter>
 			<AuthProvider>
@@ -30,15 +24,33 @@ const AppRoutes = () => {
 
 					<Route element={<PrivateRoutes />}>
 						<Route element={<AppLayout />}>
-							<Route path="/dashboard" element={<Dashboard />} />
+							<Route
+								path="/dashboard"
+								element={
+									<Suspense fallback={<Spinner label="Carregando..." />}>
+										<Dashboard />
+									</Suspense>
+								}
+							/>
 							<Route path="/transacoes" element={<Transactions />} />
 							<Route path="/transacoes/nova" element={<TransactionForm />} />
+							<Route
+								path="/transacoes/:id/editar"
+								element={<TransactionForm />}
+							/>
 						</Route>
 					</Route>
 
-					<Route path="*" element={<h2>Página não encontrada</h2>} />
+					<Route path="*" element={<NotFound />} />
 				</Routes>
-				<ToastContainer {...toastConfig} />
+				<ToastContainer
+					position="top-right"
+					autoClose={3000}
+					newestOnTop
+					closeOnClick
+					pauseOnHover
+					theme="dark"
+				/>
 			</AuthProvider>
 		</BrowserRouter>
 	);

@@ -12,10 +12,10 @@ export interface Transaction {
 	amount: number;
 	date: string | Date;
 	categoryId: string;
-	Category: Category;
+	Category: Pick<Category, "name" | "color" | "type">;
 	type: TransactionType;
 	updatedAt: string | Date;
-	createddAt: string | Date;
+	createdAt: string | Date;
 }
 
 export interface TransactionFilter {
@@ -23,6 +23,14 @@ export interface TransactionFilter {
 	year: number;
 	categoryId?: string;
 	type?: TransactionType;
+}
+
+export interface TransactionPayload {
+	description: string;
+	amount: number;
+	date: string;
+	categoryId: string;
+	type: TransactionType;
 }
 
 export interface TransactionSummary {

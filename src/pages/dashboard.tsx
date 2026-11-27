@@ -1,4 +1,4 @@
-import { ArrowUp, Calendar, TrendingUp, Wallet } from "lucide-react";
+import { ArrowDown, ArrowUp, Calendar, TrendingUp, Wallet } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
 	Bar,
@@ -16,6 +16,7 @@ import {
 } from "recharts";
 import Card from "../components/Card";
 import MonthYearSelect from "../components/MonthYearSelect";
+import Spinner from "../components/Spinner";
 import {
 	getTransactionSummary,
 	getTransactionsMontly,
@@ -23,56 +24,84 @@ import {
 import type { MonthlyItem, TransactionSummary } from "../types/transactions";
 import { formatCurrency } from "../utils/formatters";
 
-const initialSumary: TransactionSummary = {
+const initialSummary: TransactionSummary = {
 	balance: 0,
 	totalExpenses: 0,
 	totalIncomes: 0,
 	expensesByCategory: [],
 };
 
+const tooltipStyle = {
+	contentStyle: {
+		backgroundColor: "#141F2B",
+		border: "1px solid #1A2B3E",
+		borderRadius: 8,
+	},
+	itemStyle: { color: "#FFFFFF" },
+	labelStyle: { color: "#94A3B8", textTransform: "capitalize" as const },
+};
+
+const currencyTooltipFormatter = (value: unknown): string =>
+	typeof value === "number" ? formatCurrency(value) : String(value ?? "");
+
 const Dashboard = () => {
 	const currentDate = new Date();
 	const [year, setYear] = useState<number>(currentDate.getFullYear());
-	const [month, setMonth] = useState(currentDate.getMonth() + 1);
-	const [summary, setSummary] = useState<TransactionSummary>(initialSumary);
+	const [month, setMonth] = useState<number>(currentDate.getMonth() + 1);
+	const [summary, setSummary] = useState<TransactionSummary>(initialSummary);
 	const [monthlyItemsData, setMonthlyItemsData] = useState<MonthlyItem[]>([]);
+	const [loading, setLoading] = useState<boolean>(true);
 
 	useEffect(() => {
-		async function loadTransactionsSummary() {
-			try {
-				const response = await getTransactionSummary(month, year);
-				setSummary(response);
-			} catch (err) {
-				console.error("Erro ao carregar resumo", err);
-				setSummary(initialSumary);
-			}
-		}
+		let active = true;
 
-		async function loadMonthlyItems() {
-			try {
-				const response = await getTransactionsMontly(month, year);
-				setMonthlyItemsData(response.history ?? []);
-			} catch (err) {
-				console.error("Erro ao carregar histórico", err);
+		const loadData = async (): Promise<void> => {
+			setLoading(true);
+			const [summaryResult, historyResult] = await Promise.allSettled([
+				getTransactionSummary(month, year),
+				getTransactionsMontly(month, year),
+			]);
+
+			if (!active) return;
+
+			if (summaryResult.status === "fulfilled") {
+				setSummary(summaryResult.value);
+			} else {
+				console.error("Erro ao carregar resumo", summaryResult.reason);
+				setSummary(initialSummary);
+			}
+
+			if (historyResult.status === "fulfilled") {
+				setMonthlyItemsData(historyResult.value.history ?? []);
+			} else {
+				console.error("Erro ao carregar histórico", historyResult.reason);
 				setMonthlyItemsData([]);
 			}
-		}
 
-		loadTransactionsSummary();
-		loadMonthlyItems();
+			setLoading(false);
+		};
+
+		loadData();
+
+		return () => {
+			active = false;
+		};
 	}, [month, year]);
 
-	const renderPiechartLabel = ({
+	const renderPieChartLabel = ({
 		name,
 		percent,
-	}: PieLabelRenderProps): string => {
-		return `${name}: ${(Number(percent ?? 0) * 100).toFixed(1)}%`;
-	};
+	}: PieLabelRenderProps): string =>
+		`${name}: ${(Number(percent ?? 0) * 100).toFixed(1)}%`;
+
+	const hasHistory = monthlyItemsData.some(
+		(item) => item.income > 0 || item.expenses > 0,
+	);
 
 	return (
 		<div className="container-app py-6">
-			<div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-				<h1 className="text-2xl font-bold mb-4 md:mb-0">Dashboard</h1>
+			<div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+				<h1 className="text-2xl font-bold">Dashboard</h1>
 				<MonthYearSelect
 					month={month}
 					year={year}
@@ -80,26 +109,8 @@ const Dashboard = () => {
 					onYearChange={setYear}
 				/>
 			</div>
+
 			<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-				<Card
-					icon={<Wallet size={20} className="text-red-200" />}
-					title="Despesa"
-					hover
-				>
-					<p className="text-2xl font-semibold mt-2 text-red-500">
-						{formatCurrency(summary.totalExpenses)}
-					</p>
-				</Card>
-
-				<Card
-					icon={<ArrowUp size={20} className="text-primary-500" />}
-					title="Receitas"
-				>
-					<p className="text-2xl font-semibold mt-2 text-primary-500">
-						{formatCurrency(summary.totalIncomes)}
-					</p>
-				</Card>
-
 				<Card
 					icon={<Wallet size={20} className="text-primary-500" />}
 					title="Saldo"
@@ -107,21 +118,42 @@ const Dashboard = () => {
 					glowEffect={summary.balance > 0}
 				>
 					<p
-						className={`text-2xl font-semibold mt-2 
-        ${summary.balance > 0 ? "text-primary-500" : "text-red-300"}`}
+						className={`text-2xl font-semibold mt-2 ${summary.balance >= 0 ? "text-primary-500" : "text-red-500"}`}
 					>
 						{formatCurrency(summary.balance)}
 					</p>
 				</Card>
+
+				<Card
+					icon={<ArrowUp size={20} className="text-primary-500" />}
+					title="Receitas"
+					hover
+				>
+					<p className="text-2xl font-semibold mt-2 text-primary-500">
+						{formatCurrency(summary.totalIncomes)}
+					</p>
+				</Card>
+
+				<Card
+					icon={<ArrowDown size={20} className="text-red-500" />}
+					title="Despesas"
+					hover
+				>
+					<p className="text-2xl font-semibold mt-2 text-red-500">
+						{formatCurrency(summary.totalExpenses)}
+					</p>
+				</Card>
 			</div>
 
-			<div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6 mt-3">
+			<div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6 mt-6">
 				<Card
 					icon={<TrendingUp size={20} className="text-primary-500" />}
 					title="Despesas por Categoria"
 					className="min-h-80"
 				>
-					{summary.expensesByCategory.length > 0 ? (
+					{loading ? (
+						<Spinner />
+					) : summary.expensesByCategory.length > 0 ? (
 						<div className="h-72 mt-4">
 							<ResponsiveContainer>
 								<PieChart>
@@ -132,36 +164,36 @@ const Dashboard = () => {
 										outerRadius={80}
 										dataKey="amount"
 										nameKey="categoryName"
-										label={renderPiechartLabel}
+										label={renderPieChartLabel}
 									>
 										{summary.expensesByCategory.map((entry) => (
 											<Cell key={entry.categoryId} fill={entry.categoryColor} />
 										))}
 									</Pie>
 									<Tooltip
-										formatter={(value) =>
-											typeof value === "number"
-												? formatCurrency(value)
-												: String(value ?? "")
-										}
+										formatter={currencyTooltipFormatter}
+										{...tooltipStyle}
 									/>
 									<Legend />
 								</PieChart>
 							</ResponsiveContainer>
 						</div>
 					) : (
-						<div className="flex items-center justify-center h-64 text-gray-500">
-							Nenhuma despesa registrada nesse periodo
+						<div className="flex items-center justify-center h-64 text-gray-400">
+							Nenhuma despesa registrada neste período
 						</div>
 					)}
 				</Card>
+
 				<Card
 					icon={<Calendar size={20} className="text-primary-500" />}
-					title="Historico Mensal"
-					className="min-h-80 p-2.5"
+					title="Histórico Mensal"
+					className="min-h-80"
 				>
 					<div className="h-72 mt-4">
-						{monthlyItemsData.length > 0 ? (
+						{loading ? (
+							<Spinner />
+						) : hasHistory ? (
 							<ResponsiveContainer>
 								<BarChart
 									data={monthlyItemsData}
@@ -177,14 +209,12 @@ const Dashboard = () => {
 										stroke="#9CA3AF"
 										width="auto"
 										tickFormatter={formatCurrency}
-										tick={{ style: { fontSize: 14 } }}
+										tick={{ style: { fontSize: 12 } }}
 									/>
 									<Tooltip
-										formatter={(value) =>
-											typeof value === "number"
-												? formatCurrency(value)
-												: String(value ?? "")
-										}
+										formatter={currencyTooltipFormatter}
+										cursor={{ fill: "rgba(255,255,255,0.05)" }}
+										{...tooltipStyle}
 									/>
 									<Legend />
 									<Bar
@@ -202,8 +232,8 @@ const Dashboard = () => {
 								</BarChart>
 							</ResponsiveContainer>
 						) : (
-							<div className="flex items-center justify-center h-64 text-gray-500">
-								Nenhuma transação registrada nesse período
+							<div className="flex items-center justify-center h-64 text-gray-400">
+								Nenhuma transação registrada neste período
 							</div>
 						)}
 					</div>

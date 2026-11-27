@@ -1,13 +1,16 @@
+import { FirebaseError } from "firebase/app";
 import {
-	signOut as fireBaseSigOut,
+	signOut as firebaseSignOut,
 	onAuthStateChanged,
 	signInWithPopup,
 } from "firebase/auth";
 import {
 	createContext,
 	type ReactNode,
+	useCallback,
 	useContext,
 	useEffect,
+	useMemo,
 	useState,
 } from "react";
 import { firebaseAuth, googleAuthProvider } from "../config/firebase";
@@ -21,44 +24,52 @@ interface AuthContextProps {
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
 
+const firebaseErrorMessages: Record<string, string> = {
+	"auth/popup-closed-by-user": "A janela de login foi fechada antes de concluir.",
+	"auth/cancelled-popup-request": "Login cancelado.",
+	"auth/popup-blocked":
+		"O navegador bloqueou a janela de login. Permita pop-ups e tente novamente.",
+	"auth/network-request-failed": "Falha de conexão. Verifique sua internet.",
+};
+
+const getAuthErrorMessage = (err: unknown, fallback: string): string => {
+	if (err instanceof FirebaseError) {
+		return firebaseErrorMessages[err.code] ?? fallback;
+	}
+	return fallback;
+};
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
+	// Começa como "loading" até o Firebase informar se há sessão ativa,
+	// evitando redirecionar para /login ao recarregar uma página privada.
 	const [authState, setAuthState] = useState<AuthState>({
 		user: null,
 		error: null,
-		loading: false,
+		loading: true,
 	});
 
 	useEffect(() => {
 		const unsubscribe = onAuthStateChanged(
 			firebaseAuth,
 			(user) => {
-				console.log(user);
-				if (user) {
-					// 👇 TEMPORÁRIO - apenas para pegar o token durante o desenvolvimento
-					user.getIdToken().then((token) => console.log("ID TOKEN:", token));
-					setAuthState({
-						user: {
-							uid: user.uid,
-							email: user.email,
-							displayName: user.displayName,
-							photoURL: user.photoURL,
-						},
-						error: null,
-						loading: false,
-					});
-				} else {
-					setAuthState({
-						user: null,
-						error: null,
-						loading: false,
-					});
-				}
+				setAuthState({
+					user: user
+						? {
+								uid: user.uid,
+								email: user.email,
+								displayName: user.displayName,
+								photoURL: user.photoURL,
+							}
+						: null,
+					error: null,
+					loading: false,
+				});
 			},
 			(error) => {
-				console.error("Erro na autenticação");
+				console.error("Erro na autenticação", error);
 				setAuthState({
 					user: null,
-					error: error.message,
+					error: "Erro ao verificar autenticação",
 					loading: false,
 				});
 			},
@@ -67,35 +78,41 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 		return () => unsubscribe();
 	}, []);
 
-	const signWithGoogle = async (): Promise<void> => {
-		setAuthState((prev) => ({ ...prev, loading: true }));
+	const signWithGoogle = useCallback(async (): Promise<void> => {
+		setAuthState((prev) => ({ ...prev, loading: true, error: null }));
 
 		try {
 			await signInWithPopup(firebaseAuth, googleAuthProvider);
 		} catch (err) {
-			const message =
-				err instanceof Error ? err.message : "Erro ao tentar logar";
-			setAuthState((prev) => ({ ...prev, loading: false, error: message }));
+			setAuthState((prev) => ({
+				...prev,
+				loading: false,
+				error: getAuthErrorMessage(err, "Erro ao tentar fazer login"),
+			}));
 		}
-	};
+	}, []);
 
-	const signOut = async (): Promise<void> => {
+	const signOut = useCallback(async (): Promise<void> => {
 		setAuthState((prev) => ({ ...prev, loading: true }));
 
 		try {
-			await fireBaseSigOut(firebaseAuth);
+			await firebaseSignOut(firebaseAuth);
 		} catch (err) {
-			const message =
-				err instanceof Error ? err.message : "Erro ao tentar logar";
-			setAuthState((prev) => ({ ...prev, loading: false, error: message }));
+			setAuthState((prev) => ({
+				...prev,
+				loading: false,
+				error: getAuthErrorMessage(err, "Erro ao tentar sair"),
+			}));
+			throw err;
 		}
-	};
+	}, []);
 
-	return (
-		<AuthContext.Provider value={{ authState, signWithGoogle, signOut }}>
-			{children}
-		</AuthContext.Provider>
+	const value = useMemo(
+		() => ({ authState, signWithGoogle, signOut }),
+		[authState, signWithGoogle, signOut],
 	);
+
+	return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = () => {

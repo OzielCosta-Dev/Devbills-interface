@@ -22,6 +22,9 @@ const monthNames: readonly string[] = [
 	"Dezembro",
 ];
 
+const selectClasses =
+	"bg-gray-800 border border-gray-700 rounded-md py-1.5 px-3 text-sm font-medium text-gray-50 cursor-pointer focus:outline-none focus:ring-1 focus:ring-primary-500";
+
 const MonthYearSelect = ({
 	month,
 	onMonthChange,
@@ -33,6 +36,11 @@ const MonthYearSelect = ({
 		{ length: 11 },
 		(_, i) => currentYear - 5 + i,
 	);
+	// Garante que o ano selecionado sempre exista na lista (ao navegar pelas setas)
+	if (!years.includes(year)) {
+		years.push(year);
+		years.sort((a, b) => a - b);
+	}
 
 	const handleNextMonth = (): void => {
 		if (month === 12) {
@@ -53,25 +61,25 @@ const MonthYearSelect = ({
 	};
 
 	return (
-		<div className="flex items-center justify-between bg-900 rounded-lg p-3 border border-gray-700">
+		<div className="flex items-center justify-between gap-2 bg-gray-900 rounded-lg p-2 border border-gray-700">
 			<button
 				type="button"
-				className="p-2 rounded-full hover:bg-gray-800 hover:text-primary-500 transition-colors cursor=pointer"
-				aria-label="Mês Anterior"
+				className="p-2 rounded-full hover:bg-gray-800 hover:text-primary-500 transition-colors cursor-pointer"
+				aria-label="Mês anterior"
 				onClick={handlePrevMonth}
 			>
-				<ChevronLeft />
+				<ChevronLeft className="w-5 h-5" />
 			</button>
 
-			<div>
+			<div className="flex items-center gap-2">
 				<label htmlFor="month-select" className="sr-only">
-					Selecionar Mês
+					Selecionar mês
 				</label>
 				<select
+					id="month-select"
 					value={month}
 					onChange={(event) => onMonthChange(Number(event.target.value))}
-					id="month-select"
-					className="bg-gray-800 border border-gray-700 rounded-md py-1 px-3 text-sm font-medium text-gray-100 focus: outline-none focus:ring-1 focus: ring-primary-500 cursor=pointer"
+					className={selectClasses}
 				>
 					{monthNames.map((name, index) => (
 						<option key={name} value={index + 1}>
@@ -81,16 +89,17 @@ const MonthYearSelect = ({
 				</select>
 
 				<label htmlFor="year-select" className="sr-only">
-					Selecionar Ano
+					Selecionar ano
 				</label>
 				<select
 					id="year-select"
+					value={year}
 					onChange={(event) => onYearChange(Number(event.target.value))}
-					className="bg-gray-800 border border-gray-700 rounded-md py-1 px-3 text-sm font-medium text-gray-100 focus: outline-none focus:ring-1 focus: ring-primary-500 cursor=pointer"
+					className={selectClasses}
 				>
-					{years.map((name) => (
-						<option key={name} value={name}>
-							{name}
+					{years.map((y) => (
+						<option key={y} value={y}>
+							{y}
 						</option>
 					))}
 				</select>
@@ -98,11 +107,11 @@ const MonthYearSelect = ({
 
 			<button
 				type="button"
-				className="p-2 rounded-full hover:bg-gray-800 hover:text-primary-500 transition-colors cursor=pointer"
-				aria-label="Próximo Mês"
+				className="p-2 rounded-full hover:bg-gray-800 hover:text-primary-500 transition-colors cursor-pointer"
+				aria-label="Próximo mês"
 				onClick={handleNextMonth}
 			>
-				<ChevronRight />
+				<ChevronRight className="w-5 h-5" />
 			</button>
 		</div>
 	);
